@@ -2,8 +2,6 @@ var margin = {top: 2, right: 0, bottom: 30, left: 27},
   width = 600 - margin.left - margin.right,
   height = 100 - margin.top - margin.bottom;
 
-var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
-
 var x = d3.time.scale()
   .range([0, width]);
 
@@ -31,11 +29,13 @@ var line = d3.svg.line()
 var svg = d3.select(".graph").append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
-.append("g")
+  .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("month.csv", function(error, data) {
+d3.csv("day.csv", function(error, data) {
   if (error) throw error;
+
+  var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
 
   data.forEach(function(d) {
     d.time = parseDate(d.time);
@@ -70,3 +70,56 @@ d3.csv("month.csv", function(error, data) {
   var value = document.getElementsByClassName("value")[0];
   value.innerHTML = user_mean + 'ms';
 });
+
+var loadData = function(error, data) {
+  var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
+
+  data.forEach(function(d) {
+    d.time = parseDate(d.time);
+    d.response_time = +d.response_time;
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.time; }));
+  y.domain(d3.extent(data, function(d) { return d.response_time; }));
+
+  svg.selectAll("path")
+      .datum(data)
+      .attr("d", line);
+};
+
+function clearSelected() {
+  var dayButton = document.getElementById("day");
+  var weekButton = document.getElementById("week");
+  var monthButton = document.getElementById("month");
+
+  dayButton.className = "";
+  weekButton.className = "";
+  monthButton.className = "";
+}
+
+function loadDay() {
+  d3.csv("day.csv", loadData);
+
+  clearSelected();
+
+  var dayButton = document.getElementById("day");
+  dayButton.className = "selected";
+}
+
+function loadWeek() {
+  d3.csv("week.csv", loadData);
+
+  clearSelected();
+
+  var weekButton = document.getElementById("week");
+  weekButton.className = "selected";
+}
+
+function loadMonth() {
+  d3.csv("month.csv", loadData);
+
+  clearSelected();
+
+  var monthButton = document.getElementById("month");
+  monthButton.className = "selected";
+}
