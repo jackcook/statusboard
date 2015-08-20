@@ -1,0 +1,193 @@
+/**** VARIABLES ****/
+
+@50: #e8eaf6;
+@200: #9fa8da;
+@400: #5c6bc0;
+@500: #3f51b5;
+@900: #1a237e;
+
+@online: #a5d6a7;
+@online-border: #4caf50;
+
+@black: #000000;
+@dark-gray: #333333;
+@gray: #777777;
+@light-gray: #aaa;
+@white: #ffffff;
+
+
+/**** TOP-LEVEL RULES ****/
+
+* {
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background: #fff;
+  padding: 32px 0;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 400;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 400;
+  color: @dark-gray;
+}
+
+h3 {
+  font-weight: 400;
+  font-size: 16px;
+  color: @dark-gray;
+}
+
+p {
+  font-size: 14px;
+  line-height: 19px;
+  color: @gray;
+}
+
+a {
+  text-decoration: none;
+  color: @400;
+  transition: color 0.25s ease;
+}
+
+a:hover {
+  color: @900;
+}
+
+.wrap {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+
+/**** HEADER RULES ****/
+
+#header {
+  margin-bottom: 12px;
+}
+
+
+/**** NOTICE RULES ****/
+
+#notice {
+  padding: 8px 12px;
+  border: 2px solid;
+  margin-bottom: 28px;
+}
+
+#notice.online {
+  border-color: @online-border;
+  background-color: @online;
+}
+
+
+/**** TEXT RULES ****/
+
+#text {
+  margin-bottom: 26px;
+
+  h3 {
+    padding-bottom: 4px;
+    border-bottom: 1px solid @50;
+    margin-bottom: 6px;
+  }
+
+  .question {
+    margin-bottom: 22px;
+  }
+
+  .question:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+
+/**** STATS RULES ****/
+
+#stats {
+  .controls {
+    overflow: hidden;
+    padding-bottom: 16px;
+    margin-right: -10px;
+    color: @light-gray;
+
+    h2 {
+      float: left;
+    }
+
+    span {
+      float: right;
+    }
+  }
+
+  .controls>div {
+    display: inline-block;
+    vertical-align: middle;
+    width: 49%;
+  }
+
+  .metric {
+    margin-bottom: 12px;
+
+    .title {
+      margin-left: 27px;
+      margin-bottom: 10px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid @50;
+
+      h3 {
+        color: @dark-gray;
+        float: left;
+      }
+
+      span {
+        color: @dark-gray;
+        float: right;
+      }
+    }
+
+    .graph {
+      .axis path {
+        display: none;
+      }
+
+      .tick text {
+        fill: @light-gray;
+        font-size: 11px;
+      }
+
+      .line {
+        fill: none;
+        stroke: @900;
+        stroke-width: 1.5px;
+      }
+    }
+  }
+}
+
+#footer {
+  border-top: 1px solid @50;
+  padding-top: 8px;
+
+  a {
+    float: left;
+    font-size: 12px;
+  }
+
+  span {
+    float: right;
+    color: @gray;
+    font-size: 12px;
+  }
+}
