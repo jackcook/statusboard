@@ -1,17 +1,17 @@
 from __future__ import division
-import datetime
+from datetime import datetime
+from flask import Flask
+from threading import Timer
+
 import requests
 import time
+
+app = Flask(__name__)
 
 url = 'http://jackcook.nyc'
 
 requests_per_minute = 1 # move to config
 graph_data_points = 360
-
-def check_response():
-    response = requests.get(url)
-    ms = response.elapsed.microseconds / 1000
-    return ms
 
 def parse_lines(lines):
     total = 0
@@ -31,60 +31,87 @@ def parse_lines(lines):
 
     return newlines
 
-with open('data.csv', 'a') as datafile:
-    response_time = check_response()
+def web_response_check():
+    print 'Checking web response time of %s' % url
 
-    now = time.time()
-    timestamp = datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
-    datafile.write('%s,%.3f\n' % (timestamp, response_time))
+    with open('data.csv', 'a') as datafile:
+        response = requests.get(url)
+        response_time = response.elapsed.microseconds / 1000
 
-with open('data.csv', 'r') as datafile:
-    month = []
-    week = []
-    day = []
+        now = time.time()
+        timestamp = datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
+        datafile.write('%s,%.3f\n' % (timestamp, response_time))
 
-    mmax = 60 * 24 * 30
-    wmax = 60 * 24 * 7
-    dmax = 60 * 24 * 1
-    i = 0
+    with open('data.csv', 'r') as datafile:
+        month = []
+        week = []
+        day = []
 
-    for line in datafile.readlines()[::-1]:
-        if line[0] == 't':
-            break
+        mmax = 60 * 24 * 30
+        wmax = 60 * 24 * 7
+        dmax = 60 * 24 * 1
+        i = 0
 
-        try:
-            if i < mmax:
-                month.append(line)
+        for line in datafile.readlines()[::-1]:
+            if line[0] == 't':
+                break
 
-            if i < wmax:
-                week.append(line)
+            try:
+                if i < mmax:
+                    month.append(line)
 
-            if i < dmax:
-                day.append(line)
-        except (IndexError):
-            break
+                if i < wmax:
+                    week.append(line)
 
-        i += 1
+                if i < dmax:
+                    day.append(line)
+            except (IndexError):
+                break
 
-        if i == mmax:
-            break
+            i += 1
 
-    header = 'time,response_time\n'
+            if i == mmax:
+                break
 
-    with open('month.csv', 'w+') as monthfile:
-        monthfile.write(header)
-        lines = parse_lines(month)
-        for line in lines:
-            monthfile.write(line)
+        header = 'time,response_time\n'
 
-    with open('week.csv', 'w+') as weekfile:
-        weekfile.write(header)
-        lines = parse_lines(week)
-        for line in lines:
-            weekfile.write(line)
+        with open('month.csv', 'w+') as monthfile:
+            monthfile.write(header)
+            lines = parse_lines(month)
+            for line in lines:
+                monthfile.write(line)
 
-    with open('day.csv', 'w+') as dayfile:
-        dayfile.write(header)
-        lines = parse_lines(day)
-        for line in lines:
-            dayfile.write(line)
+        with open('week.csv', 'w+') as weekfile:
+            weekfile.write(header)
+            lines = parse_lines(week)
+            for line in lines:
+                weekfile.write(line)
+
+        with open('day.csv', 'w+') as dayfile:
+            dayfile.write(header)
+            lines = parse_lines(day)
+            for line in lines:
+                dayfile.write(line)
+
+done = False
+
+def update():
+    global done
+
+    second = datetime.now().second
+
+    if second < 2 and not done:
+        web_response_check()
+        done = True
+    elif second > 58:
+        done = False
+
+    timer = Timer(0.1, update)
+    timer.daemon = True
+    timer.start()
+
+if __name__ == '__main__':
+    print 'Starting up statusboard...'
+
+    update()
+    app.run()
