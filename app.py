@@ -1,97 +1,90 @@
 from __future__ import division
+from contextlib import closing
 from datetime import datetime
-from flask import Flask, render_template, url_for
+from flask import Flask, Response, flash, g, render_template, url_for
 from threading import Timer
 
+import sqlite3
 import requests
 import time
 
+DATABASE = 'data.db'
+SECRET_KEY = 'statusboardkey'
+USERNAME = 'admin'
+PASSWORD = 'default'
+
 app = Flask(__name__)
+app.config.from_object(__name__)
 
 url = 'http://jackcook.nyc'
 
 requests_per_minute = 1 # move to config
 graph_data_points = 360
 
-def parse_lines(lines):
+def connect_db():
+    return sqlite3.connect(app.config['DATABASE'])
+
+def init_db():
+    with closing(connect_db()) as db:
+        with app.open_resource('schema.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+            db.commit()
+
+@app.before_request
+def before_request():
+    g.db = connect_db()
+
+@app.teardown_request
+def teardown_request(exception):
+    db = getattr(g, 'db', None)
+    if db is not None:
+        db.close()
+
+def parse_data(data):
     total = 0
     i = -1
-    newlines = []
+    newdata = []
 
-    for line in lines[::-1]:
-        requests_per_datapoint = int(len(lines) / graph_data_points)
+    for datum in data:
+        requests_per_datapoint = int(len(data) / graph_data_points)
         add = i % requests_per_datapoint == 0
-        total += float(line.split(',')[1])
+        total += float(datum['time'])
         i += 1
         if add:
             mean = total / requests_per_datapoint
-            newline = '%s,%.5f\n' % (line.split(',')[0], mean)
-            newlines.append(newline)
+            newdatum = {'timestamp': datum['timestamp'], 'time': mean}
+            newdata.append(newdatum)
             total = 0.0
 
-    return newlines
+    return newdata
 
 def web_response_check():
     print 'Checking web response time of %s' % url
 
-    with open('./data.csv', 'a') as datafile:
-        response = requests.get(url)
-        response_time = response.elapsed.microseconds / 1000
+    response = requests.get(url)
+    response_time = response.elapsed.microseconds / 1000
 
-        now = time.time()
-        timestamp = datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
-        datafile.write('%s,%.3f\n' % (timestamp, response_time))
+    now = time.time()
+    timestamp = datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
 
-    with open('./data.csv', 'r') as datafile:
-        month = []
-        week = []
-        day = []
+    db = connect_db()
+    db.execute('insert into data (timestamp, time) values (\'%s\', %.3f)' % (timestamp, response_time))
+    db.commit()
+    db.close()
 
-        mmax = 60 * 24 * 30
-        wmax = 60 * 24 * 7
-        dmax = 60 * 24 * 1
-        i = 0
+    print '%s returned in %.3fms' % (url, response_time)
 
-        for line in datafile.readlines()[::-1]:
-            if line[0] == 't':
-                break
+@app.route('/data')
+def get_data():
+    objects = g.db.execute('select timestamp, time from data order by id desc limit 1440')
+    data = parse_data([dict(timestamp=row[0], time=row[1]) for row in objects.fetchall()][::-1])
 
-            try:
-                if i < mmax:
-                    month.append(line)
+    returnstr = 'timestamp,time\n'
 
-                if i < wmax:
-                    week.append(line)
+    for datum in data:
+        returnstr += '%s,%.5f\n' % (datum['timestamp'], datum['time'])
 
-                if i < dmax:
-                    day.append(line)
-            except (IndexError):
-                break
-
-            i += 1
-
-            if i == mmax:
-                break
-
-        header = 'time,response_time\n'
-
-        with open('./static/month.csv', 'w+') as monthfile:
-            monthfile.write(header)
-            lines = parse_lines(month)
-            for line in lines:
-                monthfile.write(line)
-
-        with open('./static/week.csv', 'w+') as weekfile:
-            weekfile.write(header)
-            lines = parse_lines(week)
-            for line in lines:
-                weekfile.write(line)
-
-        with open('./static/day.csv', 'w+') as dayfile:
-            dayfile.write(header)
-            lines = parse_lines(day)
-            for line in lines:
-                dayfile.write(line)
+    return Response(returnstr, mimetype='text/csv')
 
 done = False
 
@@ -112,11 +105,12 @@ def update():
 
 @app.route('/')
 def index():
-    data = {'response_time': '89ms'}
     return render_template('index.html')
 
 if __name__ == '__main__':
     print 'Starting up statusboard...'
 
+    init_db()
+
     update()
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=5000)
