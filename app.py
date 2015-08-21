@@ -24,7 +24,7 @@ def parse_lines(lines):
         i += 1
         if add:
             mean = total / minutes_per_datapoint
-            newline = '%s,%f\n' % (line.split(',')[0], mean)
+            newline = '%s,%.5f\n' % (line.split(',')[0], mean)
             newlines.append(newline)
             total = 0.0
 

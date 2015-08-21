@@ -32,7 +32,7 @@ var svg = d3.select(".graph").append("svg")
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("day.csv", function(error, data) {
+var loadData = function(error, data) {
   if (error) throw error;
 
   var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
@@ -44,6 +44,9 @@ d3.csv("day.csv", function(error, data) {
 
   x.domain(d3.extent(data, function(d) { return d.time; }));
   y.domain(d3.extent(data, function(d) { return d.response_time; }));
+
+  svg.selectAll("g").remove();
+  svg.selectAll("path").remove();
 
   svg.append("g")
       .attr("class", "x axis")
@@ -69,22 +72,6 @@ d3.csv("day.csv", function(error, data) {
 
   var value = document.getElementsByClassName("value")[0];
   value.innerHTML = user_mean + 'ms';
-});
-
-var loadData = function(error, data) {
-  var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
-
-  data.forEach(function(d) {
-    d.time = parseDate(d.time);
-    d.response_time = +d.response_time;
-  });
-
-  x.domain(d3.extent(data, function(d) { return d.time; }));
-  y.domain(d3.extent(data, function(d) { return d.response_time; }));
-
-  svg.selectAll("path")
-      .datum(data)
-      .attr("d", line);
 };
 
 function clearSelected() {
@@ -123,3 +110,5 @@ function loadMonth() {
   var monthButton = document.getElementById("month");
   monthButton.className = "selected";
 }
+
+loadDay();
