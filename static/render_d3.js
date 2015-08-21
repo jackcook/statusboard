@@ -23,8 +23,8 @@ var yAxis = d3.svg.axis()
   .orient("left");
 
 var line = d3.svg.line()
-  .x(function(d) { return x(d.time); })
-  .y(function(d) { return y(d.response_time); });
+  .x(function(d) { return x(d.timestamp); })
+  .y(function(d) { return y(d.time); });
 
 var svg = d3.select(".graph").append("svg")
   .attr("width", width + margin.left + margin.right)
@@ -38,12 +38,12 @@ var loadData = function(error, data) {
   var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
 
   data.forEach(function(d) {
-    d.time = parseDate(d.time);
-    d.response_time = +d.response_time;
+    d.timestamp = parseDate(d.timestamp);
+    d.time = +d.time;
   });
 
-  x.domain(d3.extent(data, function(d) { return d.time; }));
-  y.domain(d3.extent(data, function(d) { return d.response_time; }));
+  x.domain(d3.extent(data, function(d) { return d.timestamp; }));
+  y.domain(d3.extent(data, function(d) { return d.time; }));
 
   svg.selectAll("g").remove();
   svg.selectAll("path").remove();
@@ -64,7 +64,7 @@ var loadData = function(error, data) {
 
   var total = 0;
   for (var i = 0; i < data.length; i++) {
-    total += data[i].response_time;
+    total += data[i].time;
   }
 
   var mean = total / data.length;
@@ -85,7 +85,7 @@ function clearSelected() {
 }
 
 function loadDay() {
-  d3.csv(get_csv("day"), loadData);
+  d3.csv("./data", loadData);
 
   clearSelected();
 
