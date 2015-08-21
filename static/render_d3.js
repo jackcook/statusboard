@@ -94,16 +94,16 @@ function loadDay() {
 }
 
 function loadWeek() {
-  d3.csv("week.csv", loadData);
+  d3.csv(get_csv("week"), loadData);
 
   clearSelected();
 
-  var weekButton = dcument.getElementById("week");
+  var weekButton = document.getElementById("week");
   weekButton.className = "selected";
 }
 
 function loadMonth() {
-  d3.csv("month.csv", loadData);
+  d3.csv(get_csv("month"), loadData);
 
   clearSelected();
 
