@@ -18,7 +18,7 @@ def parse_lines(lines):
     i = -1
     newlines = []
 
-    for line in lines:
+    for line in lines[::-1]:
         requests_per_datapoint = int(len(lines) / graph_data_points)
         add = i % requests_per_datapoint == 0
         total += float(line.split(',')[1])
@@ -43,32 +43,31 @@ with open('data.csv', 'r') as datafile:
     week = []
     day = []
 
-    mmax = 60 * 24 * 28
+    mmax = 60 * 24 * 30
     wmax = 60 * 24 * 7
     dmax = 60 * 24 * 1
     i = 0
 
-    for line in datafile:
-        if i == 0:
-            i += 1
-            continue
-        else:
-            try:
-                if i < mmax:
-                    month.append(line)
+    for line in datafile.readlines()[::-1]:
+        if line[0] == 't':
+            break
 
-                if i < wmax:
-                    week.append(line)
+        try:
+            if i < mmax:
+                month.append(line)
 
-                if i < dmax:
-                    day.append(line)
-            except (IndexError):
-                break
+            if i < wmax:
+                week.append(line)
 
-            i += 1
+            if i < dmax:
+                day.append(line)
+        except (IndexError):
+            break
 
-            if i == mmax:
-                break
+        i += 1
+
+        if i == mmax:
+            break
 
     header = 'time,response_time\n'
 
