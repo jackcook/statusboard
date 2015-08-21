@@ -1,6 +1,6 @@
 from __future__ import division
 from datetime import datetime
-from flask import Flask
+from flask import Flask, render_template, url_for
 from threading import Timer
 
 import requests
@@ -34,7 +34,7 @@ def parse_lines(lines):
 def web_response_check():
     print 'Checking web response time of %s' % url
 
-    with open('data.csv', 'a') as datafile:
+    with open('./data.csv', 'a') as datafile:
         response = requests.get(url)
         response_time = response.elapsed.microseconds / 1000
 
@@ -42,7 +42,7 @@ def web_response_check():
         timestamp = datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
         datafile.write('%s,%.3f\n' % (timestamp, response_time))
 
-    with open('data.csv', 'r') as datafile:
+    with open('./data.csv', 'r') as datafile:
         month = []
         week = []
         day = []
@@ -75,19 +75,19 @@ def web_response_check():
 
         header = 'time,response_time\n'
 
-        with open('month.csv', 'w+') as monthfile:
+        with open('./static/month.csv', 'w+') as monthfile:
             monthfile.write(header)
             lines = parse_lines(month)
             for line in lines:
                 monthfile.write(line)
 
-        with open('week.csv', 'w+') as weekfile:
+        with open('./static/week.csv', 'w+') as weekfile:
             weekfile.write(header)
             lines = parse_lines(week)
             for line in lines:
                 weekfile.write(line)
 
-        with open('day.csv', 'w+') as dayfile:
+        with open('./static/day.csv', 'w+') as dayfile:
             dayfile.write(header)
             lines = parse_lines(day)
             for line in lines:
@@ -109,6 +109,11 @@ def update():
     timer = Timer(0.1, update)
     timer.daemon = True
     timer.start()
+
+@app.route('/')
+def index():
+    data = {'response_time': '89ms'}
+    return render_template('index.html')
 
 if __name__ == '__main__':
     print 'Starting up statusboard...'

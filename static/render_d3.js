@@ -85,7 +85,7 @@ function clearSelected() {
 }
 
 function loadDay() {
-  d3.csv("day.csv", loadData);
+  d3.csv(get_csv("day"), loadData);
 
   clearSelected();
 
@@ -98,7 +98,7 @@ function loadWeek() {
 
   clearSelected();
 
-  var weekButton = document.getElementById("week");
+  var weekButton = dcument.getElementById("week");
   weekButton.className = "selected";
 }
 
