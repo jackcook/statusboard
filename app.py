@@ -6,7 +6,7 @@ import time
 url = 'http://jackcook.nyc'
 
 requests_per_minute = 1 # move to config
-minutes_per_datapoint = 4 * requests_per_minute
+graph_data_points = 360
 
 def check_response():
     response = requests.get(url)
@@ -19,11 +19,12 @@ def parse_lines(lines):
     newlines = []
 
     for line in lines:
-        add = i % minutes_per_datapoint == 0
+        requests_per_datapoint = int(len(lines) / graph_data_points)
+        add = i % requests_per_datapoint == 0
         total += float(line.split(',')[1])
         i += 1
         if add:
-            mean = total / minutes_per_datapoint
+            mean = total / requests_per_datapoint
             newline = '%s,%.5f\n' % (line.split(',')[0], mean)
             newlines.append(newline)
             total = 0.0
