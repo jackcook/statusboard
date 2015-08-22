@@ -1,7 +1,7 @@
 from __future__ import division
 from contextlib import closing
 from datetime import datetime
-from flask import Flask, Response, flash, g, render_template, url_for
+from flask import Flask, Response, g, render_template, request, url_for
 from threading import Timer
 
 import sqlite3
@@ -74,9 +74,23 @@ def web_response_check():
 
     print '%s returned in %.3fms' % (url, response_time)
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/data')
 def get_data():
-    objects = g.db.execute('select timestamp, time from data order by id desc limit 1440')
+    q = request.args.get('q')
+    limit = 0
+
+    if q == 'day':
+        limit = 60 * 24
+    elif q == 'week':
+        limit = 60 * 24 * 7
+    elif q == 'month':
+        limit = 60 * 24 * 30
+
+    objects = g.db.execute('select timestamp, time from data order by id desc limit %d' % limit)
     data = parse_data([dict(timestamp=row[0], time=row[1]) for row in objects.fetchall()][::-1])
 
     returnstr = 'timestamp,time\n'
@@ -102,10 +116,6 @@ def update():
     timer = Timer(0.1, update)
     timer.daemon = True
     timer.start()
-
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 if __name__ == '__main__':
     print 'Starting up statusboard...'

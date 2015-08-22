@@ -85,7 +85,7 @@ function clearSelected() {
 }
 
 function loadDay() {
-  d3.csv("./data", loadData);
+  d3.csv("./data?q=day", loadData);
 
   clearSelected();
 
@@ -94,7 +94,7 @@ function loadDay() {
 }
 
 function loadWeek() {
-  d3.csv(get_csv("week"), loadData);
+  d3.csv("./data?q=week", loadData);
 
   clearSelected();
 
@@ -103,7 +103,7 @@ function loadWeek() {
 }
 
 function loadMonth() {
-  d3.csv(get_csv("month"), loadData);
+  d3.csv("./data?q=month", loadData);
 
   clearSelected();
 
