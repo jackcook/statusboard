@@ -5,24 +5,22 @@ from flask import Flask, Response, g, render_template, request, url_for
 from threading import Timer
 
 import sqlite3
-import requests
-import time
 
-DATABASE = 'data.db'
-SECRET_KEY = 'statusboardkey'
-USERNAME = 'admin'
-PASSWORD = 'default'
+from checks import Check
+from checks import WebResponse
+
+URL = 'http://jackcook.nyc'
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-url = 'http://jackcook.nyc'
-
 requests_per_minute = 1 # move to config
 graph_data_points = 360
 
+checks = []
+
 def connect_db():
-    return sqlite3.connect(app.config['DATABASE'])
+    return sqlite3.connect('data.db')
 
 def init_db():
     with closing(connect_db()) as db:
@@ -58,22 +56,6 @@ def parse_data(data):
 
     return newdata
 
-def web_response_check():
-    print 'Checking web response time of %s' % url
-
-    response = requests.get(url)
-    response_time = response.elapsed.microseconds / 1000
-
-    now = time.time()
-    timestamp = datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
-
-    db = connect_db()
-    db.execute('insert into data (timestamp, time) values (\'%s\', %.3f)' % (timestamp, response_time))
-    db.commit()
-    db.close()
-
-    print '%s returned in %.3fms' % (url, response_time)
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -103,12 +85,21 @@ def get_data():
 done = False
 
 def update():
+    global checks
     global done
 
     second = datetime.now().second
 
     if second < 2 and not done:
-        web_response_check()
+        if len(checks) == 0:
+            check = WebResponse(app.config['URL'])
+            checks.append(check)
+
+        print 'Performing %d checks...' % len(checks)
+
+        for check in checks:
+            check.perform_check(connect_db())
+
         done = True
     elif second > 58:
         done = False
@@ -121,6 +112,5 @@ if __name__ == '__main__':
     print 'Starting up statusboard...'
 
     init_db()
-
     update()
     app.run(host='0.0.0.0', port=5000)
