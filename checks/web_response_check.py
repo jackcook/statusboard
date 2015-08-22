@@ -6,12 +6,12 @@ import requests
 import sqlite3
 import time
 
-class WebResponse(Check):
+class WebResponseCheck(Check):
     def __init__(self, url):
         self.url = url
 
     def perform_check(self, db):
-        print 'Checking web response time of %s' % self.url
+        print 'Checking web response time of %s...' % self.url
 
         response = requests.get(self.url)
         response_time = response.elapsed.microseconds / 1000

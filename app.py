@@ -7,7 +7,8 @@ from threading import Timer
 import sqlite3
 
 from checks import Check
-from checks import WebResponse
+from checks import PingCheck
+from checks import WebResponseCheck
 
 URL = 'http://jackcook.nyc'
 
@@ -92,7 +93,8 @@ def update():
 
     if second < 2 and not done:
         if len(checks) == 0:
-            check = WebResponse(app.config['URL'])
+            check = WebResponseCheck(app.config['URL'])
+            # check = PingCheck('8.8.8.8')
             checks.append(check)
 
         print 'Performing %d checks...' % len(checks)
