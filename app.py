@@ -1,6 +1,6 @@
 from __future__ import division
 from contextlib import closing
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, Response, g, render_template, request, url_for
 from threading import Timer
 
@@ -79,7 +79,14 @@ def get_data():
     returnstr = 'timestamp,time\n'
 
     for datum in data:
-        returnstr += '%s,%.5f\n' % (datum['timestamp'], datum['time'])
+        current = datetime.now()
+        timestamp = datetime.strptime(datum['timestamp'], '%Y-%m-%d %H:%M:%S')
+        last = current - timedelta(minutes=limit)
+
+        if last > timestamp: # if timestamp is older than the limit requested
+            pass
+        else:
+            returnstr += '%s,%.5f\n' % (datum['timestamp'], datum['time'])
 
     return Response(returnstr, mimetype='text/csv')
 
