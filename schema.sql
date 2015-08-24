@@ -9,3 +9,9 @@ create table if not exists ping (
   timestamp text not null,
   time text not null
 );
+
+create table if not exists dns (
+  id integer primary key autoincrement,
+  timestamp text not null,
+  time text not null
+);
