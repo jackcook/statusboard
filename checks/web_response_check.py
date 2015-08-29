@@ -7,7 +7,8 @@ import sqlite3
 import time
 
 class WebResponseCheck(Check):
-    def __init__(self, url):
+    def __init__(self, id, url):
+        self.id = id
         self.url = url
 
     def perform_check(self, db):
@@ -19,7 +20,12 @@ class WebResponseCheck(Check):
         now = time.time()
         timestamp = datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
 
-        db.execute('insert into data (timestamp, time) values (\'%s\', %.3f)' % (timestamp, response_time))
+        try:
+            db.execute('insert into check%d (timestamp, time) values (\'%s\', %.3f)' % (self.id, timestamp, response_time))
+        except:
+            db.execute('create table check%d (id integer primary key autoincrement, timestamp text not null, time text not null)' % self.id)
+            db.execute('insert into check%d (timestamp, time) values (\'%s\', %.3f)' % (self.id, timestamp, response_time))
+
         db.commit()
         db.close()
 

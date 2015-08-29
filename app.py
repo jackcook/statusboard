@@ -90,6 +90,25 @@ def get_data():
 
     return Response(returnstr, mimetype='text/csv')
 
+def load_checks():
+    global checks
+
+    db = connect_db()
+
+    objects = db.execute('select type, payload from checks order by id desc')
+    retrieved_checks = [dict(type=row[0], payload=row[1]) for row in objects.fetchall()]
+
+    i = 0
+
+    for retrieved_check in retrieved_checks:
+        if retrieved_check['type'] == 'web_response':
+            check = WebResponseCheck(i, retrieved_check['payload'])
+            checks.append(check)
+
+        i += 1
+
+    db.close()
+
 done = False
 
 def update():
@@ -99,11 +118,6 @@ def update():
     second = datetime.now().second
 
     if second < 2 and not done:
-        if len(checks) == 0:
-            check = WebResponseCheck(app.config['URL'])
-            # check = PingCheck('8.8.8.8')
-            checks.append(check)
-
         print 'Performing %d checks...' % len(checks)
 
         for check in checks:
@@ -121,5 +135,6 @@ if __name__ == '__main__':
     print 'Starting up statusboard...'
 
     init_db()
+    load_checks()
     update()
     app.run(host='0.0.0.0', port=5000)

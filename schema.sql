@@ -1,17 +1,5 @@
-create table if not exists data (
+create table if not exists checks (
   id integer primary key autoincrement,
-  timestamp text not null,
-  time text not null
-);
-
-create table if not exists ping (
-  id integer primary key autoincrement,
-  timestamp text not null,
-  time text not null
-);
-
-create table if not exists dns (
-  id integer primary key autoincrement,
-  timestamp text not null,
-  time text not null
-);
+  type text not null,
+  payload text not null
+)
