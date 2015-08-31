@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from flask import Flask, Response, g, render_template, request, url_for
 from threading import Timer
 
+import json
 import sqlite3
 
 from checks import Check
@@ -93,21 +94,18 @@ def get_data():
 def load_checks():
     global checks
 
-    db = connect_db()
+    with open('config.json') as config_file:
+        data = json.load(config_file)
+        config_checks = data['checks']
 
-    objects = db.execute('select type, payload from checks order by id desc')
-    retrieved_checks = [dict(type=row[0], payload=row[1]) for row in objects.fetchall()]
+        i = 0
 
-    i = 0
-
-    for retrieved_check in retrieved_checks:
-        if retrieved_check['type'] == 'web_response':
-            check = WebResponseCheck(i, retrieved_check['payload'])
-            checks.append(check)
+        for config_check in config_checks:
+            if config_check['type'] == 'web_response':
+                check = WebResponseCheck(i, config_check['payload'])
+                checks.append(check)
 
         i += 1
-
-    db.close()
 
 done = False
 

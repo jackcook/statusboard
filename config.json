@@ -1,0 +1,8 @@
+{
+  "checks": [
+    {
+      "type": "web_response",
+      "payload": "http://jackcook.nyc"
+    }
+  ]
+}
