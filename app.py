@@ -55,7 +55,8 @@ def parse_data(data):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    global checks
+    return render_template('index.html', checks=checks)
 
 @app.route('/data')
 def get_data():
@@ -69,7 +70,7 @@ def get_data():
     elif q == 'month':
         limit = 60 * 24 * 30
 
-    objects = g.db.execute('select timestamp, time from check%s order by id desc limit %d' % (request.args.get('n'), limit))
+    objects = g.db.execute('select timestamp, time from %s order by id desc limit %d' % (request.args.get('t'), limit))
     data = parse_data([dict(timestamp=row[0], time=row[1]) for row in objects.fetchall()][::-1])
 
     returnstr = 'timestamp,time\n'

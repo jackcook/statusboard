@@ -84,8 +84,24 @@ function clearSelected() {
   monthButton.className = "";
 }
 
-function loadDay() {
-  d3.csv("./data?q=day&n=0", loadData);
+document.addEventListener("click", function(e) {
+  e = e || window.event;
+  var target = e.target || e.srcElement;
+  var controls = target.parentElement.parentElement.parentElement;
+  if (controls.className == "controls") {
+    var table = controls.parentElement.className;
+    if (target.innerHTML == "Day") {
+      loadDay(table);
+    } else if (target.innerHTML == "Week") {
+      loadWeek(table);
+    } else if (target.innerHTML == "Month") {
+      loadMonth(table);
+    }
+  }
+});
+
+function loadDay(table) {
+  d3.csv("./data?q=day&t=" + table, loadData);
 
   clearSelected();
 
@@ -94,7 +110,7 @@ function loadDay() {
 }
 
 function loadWeek() {
-  d3.csv("./data?q=week", loadData);
+  d3.csv("./data?q=week&t=" + table, loadData);
 
   clearSelected();
 
@@ -103,12 +119,10 @@ function loadWeek() {
 }
 
 function loadMonth() {
-  d3.csv("./data?q=month", loadData);
+  d3.csv("./data?q=month&t=" + table, loadData);
 
   clearSelected();
 
   var monthButton = document.getElementById("month");
   monthButton.className = "selected";
 }
-
-loadDay();

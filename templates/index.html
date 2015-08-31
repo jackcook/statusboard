@@ -25,22 +25,26 @@
       </div>
     </div>
     <div id="stats" class="wrap">
-      <div class="controls">
-        <div>
-          <h2>Network Statistics</h2>
+      {% for check in checks %}
+      <div class="check{{ check.id }}">
+        <div class="controls">
+          <div>
+            <h2>Network Statistics</h2>
+          </div>
+          <div>
+            <span><a id="day" class="selected">Day</a> | <a id="week">Week</a> | <a id="month">Month</a></span>
+          </div>
         </div>
-        <div>
-          <span><a id="day" class="selected" onclick="loadDay()">Day</a> | <a id="week" onclick="loadWeek()">Week</a> | <a id="month" onclick="loadMonth()">Month</a></span>
+        <div class="metric">
+          <div class="title">
+            <h3>Response Time</h3>
+            <span class="value">83ms</span>
+          </div>
+          <div class="graph">
+          </div>
         </div>
       </div>
-      <div class="metric">
-        <div class="title">
-          <h3>Response Time</h3>
-          <span class="value">83ms</span>
-        </div>
-        <div class="graph">
-        </div>
-      </div>
+      {% endfor %}
     </div>
     <div id="footer" class="wrap">
       <a href="#">Report an issue</a>
