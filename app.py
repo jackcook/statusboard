@@ -113,7 +113,7 @@ def update():
 
     second = datetime.now().second
 
-    if second < 2 and not done:
+    if second == 0 and not done:
         print 'Performing %d checks...' % len(checks)
 
         for check in checks:
@@ -133,5 +133,5 @@ if __name__ == '__main__':
     load_checks()
     update()
 
-    app.debug = True
+    # app.debug = True # debug mode causes checks to be run twice for some reason
     app.run(host='0.0.0.0', port=5000)
