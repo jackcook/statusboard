@@ -85,7 +85,7 @@ function clearSelected() {
 }
 
 function loadDay() {
-  d3.csv("./data?q=day", loadData);
+  d3.csv("./data?q=day&n=0", loadData);
 
   clearSelected();
 

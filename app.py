@@ -24,12 +24,6 @@ checks = []
 def connect_db():
     return sqlite3.connect('data.db')
 
-def init_db():
-    with closing(connect_db()) as db:
-        with app.open_resource('schema.sql', mode='r') as f:
-            db.cursor().executescript(f.read())
-            db.commit()
-
 @app.before_request
 def before_request():
     g.db = connect_db()
@@ -47,6 +41,7 @@ def parse_data(data):
 
     for datum in data:
         requests_per_datapoint = int(len(data) / graph_data_points)
+        requests_per_datapoint = requests_per_datapoint if requests_per_datapoint is not 0 else 1
         add = i % requests_per_datapoint == 0
         total += float(datum['time'])
         i += 1
@@ -74,7 +69,7 @@ def get_data():
     elif q == 'month':
         limit = 60 * 24 * 30
 
-    objects = g.db.execute('select timestamp, time from data order by id desc limit %d' % limit)
+    objects = g.db.execute('select timestamp, time from check%s order by id desc limit %d' % (request.args.get('n'), limit))
     data = parse_data([dict(timestamp=row[0], time=row[1]) for row in objects.fetchall()][::-1])
 
     returnstr = 'timestamp,time\n'
@@ -94,18 +89,21 @@ def get_data():
 def load_checks():
     global checks
 
+    db = connect_db()
+
     with open('config.json') as config_file:
         data = json.load(config_file)
         config_checks = data['checks']
 
-        i = 0
-
         for config_check in config_checks:
             if config_check['type'] == 'web_response':
-                check = WebResponseCheck(i, config_check['payload'])
+                check = WebResponseCheck(config_check['id'], config_check['payload'])
                 checks.append(check)
 
-        i += 1
+                db.execute('create table if not exists check%s (id integer primary key autoincrement, timestamp text not null, time text not null)' % config_check['id'])
+
+        db.commit()
+        db.close()
 
 done = False
 
@@ -132,7 +130,8 @@ def update():
 if __name__ == '__main__':
     print 'Starting up statusboard...'
 
-    init_db()
     load_checks()
     update()
+
+    app.debug = True
     app.run(host='0.0.0.0', port=5000)
