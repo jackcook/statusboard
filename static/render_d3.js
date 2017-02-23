@@ -103,13 +103,13 @@ document.addEventListener("click", function(e) {
 function loadDay(table) {
   d3.csv("./data?q=day&t=" + table, loadData);
 
-  clearSelected();
+  clearSelected(table);
 
   var dayButton = document.getElementById("day");
   dayButton.className = "selected";
 }
 
-function loadWeek() {
+function loadWeek(table) {
   d3.csv("./data?q=week&t=" + table, loadData);
 
   clearSelected();
@@ -118,7 +118,7 @@ function loadWeek() {
   weekButton.className = "selected";
 }
 
-function loadMonth() {
+function loadMonth(table) {
   d3.csv("./data?q=month&t=" + table, loadData);
 
   clearSelected();
